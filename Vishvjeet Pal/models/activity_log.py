@@ -1,13 +1,18 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, func, DateTime
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy.sql import func
 from core.utils.database import Base
 
 class ActivityLog(Base):
-    __tablename__="activity_logs"
+    __tablename__ = "activity_logs"
 
-    activity_id = Column(Integer, primary_key=True, index=True)
-    e_id = Column(Integer, ForeignKey('users.e_id'))
-    category = Column(String)
+    id = Column(Integer, primary_key=True, index=True)
+
+    actor_id = Column(Integer, ForeignKey("users.e_id"), nullable=False)
+    action = Column(String, nullable=False)        # e.g. assign_task
+    entity = Column(String, nullable=False)        # e.g. task, user
+    entity_id = Column(Integer, nullable=True)     # e.g. task_id
+
+    old_value = Column(String, nullable=True)
+    new_value = Column(String, nullable=True)
+
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
-
-    user = relationship("User")

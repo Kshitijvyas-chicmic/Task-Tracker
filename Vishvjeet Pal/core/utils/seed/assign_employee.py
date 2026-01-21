@@ -24,4 +24,4 @@ def assign_employee(user_email: str, db: Session):
 
 if __name__ == "__main__":
     db = next(get_db())
-    assign_employee("employee@example.com", db)
+    assign_employee("employee@gmail.com", db)

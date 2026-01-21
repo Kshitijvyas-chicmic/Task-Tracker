@@ -1,16 +1,20 @@
 from sqlalchemy.orm import Session
 from models.task import Task
-from schemas.task import TaskCreate
+from schemas.task import TaskCreate, TaskResponse
 from fastapi import HTTPException, status
-def create_task(db: Session, task_data: TaskCreate):
-    task=Task(**task_data.model_dump())
+from models.user import User
+from services.activity_log_service import log_activity
+
+def create_task(db: Session, task_data: TaskCreate) -> TaskResponse:
+    task = Task(**task_data.model_dump())
     db.add(task)
     db.commit()
     db.refresh(task)
-    return task
+    return TaskResponse(task_id=task.task_id, title=task.title, description=task.description)
 
 def get_all_tasks(db: Session):
-    return db.query(Task).all()
+    tasks= db.query(Task).all()
+    return [TaskResponse(task_id=task.task_id, title=task.title, description=task.description) for task in tasks]
 
 def update_task(db, task_id: int, task_data, user: dict):
     task = db.query(Task).filter(Task.id == task_id).first()
@@ -40,8 +44,8 @@ def update_task(db, task_id: int, task_data, user: dict):
     db.refresh(task)
     return task
 
-def delete_task(db, task_id: int, user: dict):
-    task = db.query(Task).filter(Task.id == task_id).first()
+def delete_task_service(db, task_id: int, user: dict):
+    task = db.query(Task).filter(Task.task_id == task_id).first()
 
     if not task:
         raise HTTPException(
@@ -61,3 +65,30 @@ def delete_task(db, task_id: int, user: dict):
     db.commit()
 
     return {"message": "Task deleted successfully"}
+
+def assign_task(db, task_id: int, user_id: int, actor_id: int):
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(404, "Task not found")
+
+    user = db.query(User).filter(User.e_id == user_id).first()
+    if not user:
+        raise HTTPException(404, "User not found")
+
+    old_assignee = task.assigned_to
+    task.assigned_to = user_id
+
+    db.commit()
+    db.refresh(task)
+
+    log_activity(
+        db=db,
+        actor_id=actor_id,
+        action="assign_task",
+        entity="task",
+        entity_id=task_id,
+        old_value=str(old_assignee),
+        new_value=str(user_id)
+    )
+    return task
+

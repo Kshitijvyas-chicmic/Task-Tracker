@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 
 from core.utils.deps import get_db
 from core.utils.permissions import require_permission
-from services.task_service import create_task, get_all_tasks, update_task, delete_task
-from schemas.task import TaskCreate, TaskResponse
+from services.task_service import assign_task, create_task, get_all_tasks, update_task, delete_task_service
+from schemas.task import TaskAssign, TaskCreate, TaskResponse
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"])
 
@@ -27,7 +27,7 @@ def add_task(
 )
 def list_tasks(
     db: Session = Depends(get_db),
-    user=Depends(require_permission("view_tasks"))
+    user=Depends(require_permission("view_task"))
 ):
     return get_all_tasks(db)
 
@@ -55,5 +55,18 @@ def delete_task(
     db: Session = Depends(get_db),
     user=Depends(require_permission("delete_task"))
 ):
-    return delete_task(db, task_id)
+    return delete_task_service(db, task_id, user)
 
+@router.put("/{task_id}/assign", response_model=TaskResponse)
+def assign_task_to_user(
+    task_id: int,
+    payload: TaskAssign,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_permission("assign_task"))
+):
+    return assign_task(
+        db,
+        task_id,
+        payload.user_id,
+        actor_id=current_user["user_id"]
+    )

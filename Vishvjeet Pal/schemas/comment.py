@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 class CommentCreate(BaseModel):
     task_id: int
@@ -10,7 +11,7 @@ class CommentResponse(BaseModel):
     task_id: int
     e_id: int
     content: str
-    timestamp: str
+    timestamp: datetime
 
     class Config:
         from_attributes = True

@@ -3,16 +3,30 @@ from sqlalchemy.orm import Session
 from models.user import User
 from schemas.user import UserCreate
 from core.utils.security import hash_password
-def create_user(db: Session, user_data: UserCreate):
-    data = user_data.model_dump()
-    print("Password before hash:", data["password"])
+from services.activity_log_service import log_activity
 
-    data["password"] = hash_password(data["password"])  # 🔐 hash here
+def create_user(db, user_data: UserCreate, actor_id: int):
+    user = User(
+        name=user_data.name,
+        email=user_data.email,
+        mobile=user_data.mobile,
+        team=user_data.team,
+        password=hash_password(user_data.password),
+        r_id=user_data.r_id
+    )
 
-    user = User(**data)
     db.add(user)
     db.commit()
     db.refresh(user)
+
+    log_activity(
+        db=db,
+        actor_id=actor_id,
+        action="create_user",
+        entity="user",
+        entity_id=user.e_id
+    )
+
     return user
 
 def get_user_by_id(db: Session, e_id: int):

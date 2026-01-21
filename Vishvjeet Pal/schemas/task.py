@@ -3,14 +3,20 @@ from typing import Optional
 
 class TaskCreate(BaseModel):
     title: str
-    e_id: int
+    description: str
     status: str
-    deadline: Optional[str]  
+    assigned_to: Optional[int]= None
+    created_by: Optional[int]= None
+
+class TaskAssign(BaseModel):
+    user_id: int
 
 class TaskResponse(BaseModel):
     task_id: int
     title: str
-    e_id: int
-    status: str
-    deadline: Optional[str]
-    timestamp: str
+    description: str
+    status: Optional[str]= None
+    assigned_to: Optional[int]= None
+    created_by: Optional[int]= None
+    class Config:
+        from_attributes = True

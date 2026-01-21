@@ -10,7 +10,7 @@ from core.utils.deps import get_db
 
 MANAGER_PERMISSIONS = [
     "view_users", "create_task", "edit_task", "delete_task", "view_task",
-    "assign_task", "reassign_task", "update_task_status",
+    "assign_task", "view_audit_logs", "reassign_task", "update_task_status",
     "set_task_priority", "set_task_deadline", "add_task_comment",
     "attach_task_file", "mention_team_member", "create_project",
     "update_project", "archive_project", "assign_task_project",
@@ -22,7 +22,7 @@ MANAGER_PERMISSIONS = [
 ]
 
 EMPLOYEE_PERMISSIONS = [
-    "view_task", "update_task_status", "add_task_comment", "attach_task_file",
+    "view_task", "update_task_status", "add_task_comment", "view_audit_logs", "attach_task_file",
     "mention_team_member", "view_dashboard", "receive_notifications",
 ]
 
