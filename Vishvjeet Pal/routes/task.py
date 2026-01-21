@@ -18,7 +18,7 @@ def add_task(
     db: Session = Depends(get_db),
     user=Depends(require_permission("create_task"))
 ):
-    return create_task(db, task)
+    return create_task(db, task, user["sub"])
 
 
 @router.get(
@@ -29,7 +29,7 @@ def list_tasks(
     db: Session = Depends(get_db),
     user=Depends(require_permission("view_task"))
 ):
-    return get_all_tasks(db)
+    return get_all_tasks(db, user["sub"])
 
 
 @router.post("/approve/{task_id}")
@@ -68,5 +68,5 @@ def assign_task_to_user(
         db,
         task_id,
         payload.user_id,
-        actor_id=current_user["user_id"]
+        actor_id=current_user["sub"]
     )

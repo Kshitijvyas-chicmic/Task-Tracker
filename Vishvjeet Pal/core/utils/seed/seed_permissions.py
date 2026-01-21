@@ -11,7 +11,7 @@ from core.utils.deps import get_db
 MANAGER_PERMISSIONS = [
     "view_users", "create_task", "edit_task", "delete_task", "view_task",
     "assign_task", "view_audit_logs", "reassign_task", "update_task_status",
-    "set_task_priority", "set_task_deadline", "add_task_comment",
+    "set_task_priority", "set_task_deadline", "add_task_comment", "view_comments",
     "attach_task_file", "mention_team_member", "create_project",
     "update_project", "archive_project", "assign_task_project",
     "add_team_member", "remove_team_member", "assign_role_team",
@@ -26,7 +26,7 @@ EMPLOYEE_PERMISSIONS = [
     "mention_team_member", "view_dashboard", "receive_notifications",
 ]
 
-ADMIN_PERMISSIONS = MANAGER_PERMISSIONS + EMPLOYEE_PERMISSIONS  # Full access
+ADMIN_PERMISSIONS = ["create_user", "update_user", "delete_user", "create_role", "view_role", "update_role", "delete_role", "create_role"] + MANAGER_PERMISSIONS + EMPLOYEE_PERMISSIONS  # Full access
 
 def get_or_create_role(db: Session, name: str) -> Role:
     role = db.query(Role).filter(Role.name == name).first()

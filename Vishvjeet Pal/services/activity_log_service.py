@@ -1,3 +1,4 @@
+from logging import log
 from sqlalchemy.orm import Session
 from models.activity_log import ActivityLog
 
@@ -21,3 +22,5 @@ def log_activity(
 
     db.add(log)
     db.commit()
+    db.refresh(log)
+    return log

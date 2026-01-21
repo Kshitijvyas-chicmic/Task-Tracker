@@ -35,7 +35,8 @@ MANIFEST
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
-
+# database
+Vishvjeet Pal/task_tracker.db/
 # Unit test / coverage reports
 htmlcov/
 .tox/
@@ -143,7 +144,24 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+Vishvjeet Pal/venv/
+# Environment variables
+.env
+.env.*
+Vishvjeet Pal/core/utils/.env
 
+# Python virtual environment
+Vishvjeet Pal/__pycache__/
+Vishvjeet Pal/*.pyc
+
+# SQLite database
+Vishvjeet Pal/*.db
+
+# Logs
+Vishvjeet Pal/logs/
+
+# Migrations
+Vishvjeet Pal/alembic/
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -153,7 +171,8 @@ venv.bak/
 
 # mkdocs documentation
 /site
-
+Vishvjeet Pal/alembic/__pycache__/
+Vishvjeet Pal/alembic.ini
 # mypy
 .mypy_cache/
 .dmypy.json

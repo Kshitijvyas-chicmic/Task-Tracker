@@ -5,16 +5,35 @@ from fastapi import HTTPException, status
 from models.user import User
 from services.activity_log_service import log_activity
 
-def create_task(db: Session, task_data: TaskCreate) -> TaskResponse:
+def create_task(db: Session, task_data: TaskCreate, actor_id: int) -> TaskResponse:
     task = Task(**task_data.model_dump())
+    task.created_by = actor_id
     db.add(task)
     db.commit()
     db.refresh(task)
-    return TaskResponse(task_id=task.task_id, title=task.title, description=task.description)
+    log_activity(
+        db=db,
+        actor_id=actor_id,
+        action="create_task",
+        entity="task",
+        entity_id=task.task_id,
+        old_value=None,
+        new_value=str(task_data.model_dump())
+    )
+    return TaskResponse(task_id=task.task_id, title=task.title, description=task.description, status=task.status, priority=task.priority, deadline=task.deadline, assigned_to=task.assigned_to, created_by=task.created_by)
 
-def get_all_tasks(db: Session):
+def get_all_tasks(db: Session, actor_id: int) -> list[TaskResponse]:
     tasks= db.query(Task).all()
-    return [TaskResponse(task_id=task.task_id, title=task.title, description=task.description) for task in tasks]
+    log_activity(
+        db=db,
+        actor_id=actor_id,
+        action="view_task",
+        entity="task",
+        entity_id=None,
+        old_value=None,
+        new_value=None
+    )
+    return [TaskResponse(task_id=task.task_id, title=task.title, description=task.description, status=task.status, priority=task.priority, deadline=task.deadline, assigned_to=task.assigned_to, created_by=task.created_by) for task in tasks]
 
 def update_task(db, task_id: int, task_data, user: dict):
     task = db.query(Task).filter(Task.id == task_id).first()
@@ -42,6 +61,16 @@ def update_task(db, task_id: int, task_data, user: dict):
 
     db.commit()
     db.refresh(task)
+
+    log_activity(
+        db=db,
+        actor_id=user_id,
+        action="update_task",
+        entity="task",
+        entity_id=task.task_id,
+        old_value=str(task_data.dict(exclude_unset=True)),
+        new_value=str({field: getattr(task, field) for field in task_data.dict(exclude_unset=True).keys()})
+    )
     return task
 
 def delete_task_service(db, task_id: int, user: dict):
@@ -63,11 +92,19 @@ def delete_task_service(db, task_id: int, user: dict):
 
     db.delete(task)
     db.commit()
-
+    log_activity(
+        db=db,
+        actor_id=int(user["sub"]),
+        action="delete_task",
+        entity="task",
+        entity_id=task.task_id,
+        old_value=str({"task_id": task.task_id, "title": task.title, "description": task.description}),
+        new_value="null"
+    )
     return {"message": "Task deleted successfully"}
 
 def assign_task(db, task_id: int, user_id: int, actor_id: int):
-    task = db.query(Task).filter(Task.id == task_id).first()
+    task = db.query(Task).filter(Task.task_id == task_id).first()
     if not task:
         raise HTTPException(404, "Task not found")
 
