@@ -22,18 +22,20 @@ def create_task(db: Session, task_data: TaskCreate, actor_id: int) -> TaskRespon
     )
     return TaskResponse(task_id=task.task_id, title=task.title, description=task.description, status=task.status, priority=task.priority, deadline=task.deadline, assigned_to=task.assigned_to, created_by=task.created_by)
 
-def get_all_tasks(db: Session, actor_id: int) -> list[TaskResponse]:
-    tasks= db.query(Task).all()
+def get_all_tasks(db: Session, actor_id: int, offset: int, limit: int) :
+    query = db.query(Task).order_by(Task.task_id.desc())
+    total = query.count()
+    tasks = query.offset(offset).limit(limit).all()
     log_activity(
         db=db,
         actor_id=actor_id,
-        action="view_task",
+        action="view_tasks",
         entity="task",
         entity_id=None,
         old_value=None,
         new_value=None
     )
-    return [TaskResponse(task_id=task.task_id, title=task.title, description=task.description, status=task.status, priority=task.priority, deadline=task.deadline, assigned_to=task.assigned_to, created_by=task.created_by) for task in tasks]
+    return total,[TaskResponse(task_id=task.task_id, title=task.title, description=task.description, status=task.status, priority=task.priority, deadline=task.deadline, assigned_to=task.assigned_to, created_by=task.created_by) for task in tasks]
 
 def update_task(db, task_id: int, task_data, user: dict):
     task = db.query(Task).filter(Task.id == task_id).first()
@@ -129,3 +131,19 @@ def assign_task(db, task_id: int, user_id: int, actor_id: int):
     )
     return task
 
+def get_task_by_id(db: Session, user_id: int, actor_id: int, offset: int, limit: int):
+    query = db.query(Task).filter(Task.assigned_to == user_id)
+    total = query.count()
+    task = query.offset(offset).limit(limit).all()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    log_activity(
+        db=db,
+        actor_id=actor_id,
+        action="view filtered tasks by user id {user_id}",
+        entity="task",
+        entity_id=None,
+        old_value=None,
+        new_value=None
+    )
+    return total, [TaskResponse(task_id=task.task_id, title=task.title, description=task.description, status=task.status, priority=task.priority, deadline=task.deadline, assigned_to=task.assigned_to, created_by=task.created_by) for task in task]

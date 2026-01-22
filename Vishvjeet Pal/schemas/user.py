@@ -16,5 +16,3 @@ class UserResponse(BaseModel):
     mobile: str
     r_id: Optional[int]= None
 
-    class Config:
-        from_attributes = True

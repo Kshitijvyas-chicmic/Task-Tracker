@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 from core.utils.deps import get_db, get_current_user
 from schemas.user import UserCreate, UserResponse
 from services.user_service import create_user, get_all_users, update_user, delete_user
-from core.utils.security import get_current_user
-from core.utils.permissions import require_admin, require_permission
+from core.utils.permissions import require_permission
+from core.utils.pagination import pagination_params
 
 router=APIRouter(prefix="/users", tags=["Users"])
 
@@ -12,9 +12,15 @@ router=APIRouter(prefix="/users", tags=["Users"])
 def add_user(user: UserCreate, db: Session = Depends(get_db), current_user=Depends(require_permission("create_user"))):
     return create_user(db, user, current_user['sub'])
 
-@router.get("/", response_model=list[UserResponse])
-def list_users(current_user=Depends(require_permission("view_users")),db: Session = Depends(get_db)):
-    return get_all_users(db, current_user['sub'])
+@router.get("/")
+def list_users(pagination=Depends(pagination_params),current_user=Depends(require_permission("view_users")), db: Session = Depends(get_db)):
+    total, users = get_all_users(db, current_user['sub'], pagination["offset"], pagination["size"])
+    return {
+        "page": pagination["page"],
+        "size": pagination["size"],
+        "total": total,
+        "data": users
+    }
 
 @router.put("/{user_id}", response_model=UserResponse)
 def update_user_route(
