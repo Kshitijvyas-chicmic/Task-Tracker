@@ -5,6 +5,7 @@ from schemas.user import UserCreate, UserResponse
 from services.user_service import create_user, get_all_users, update_user, delete_user
 from core.utils.permissions import require_permission
 from core.utils.pagination import pagination_params
+from services.user_service import add_role_to_user
 
 router=APIRouter(prefix="/users", tags=["Users"])
 
@@ -38,3 +39,12 @@ def delete_user_route(
     current_user=Depends(require_permission("delete_user"))
 ):
     return delete_user(db, user_id, current_user['sub'])
+
+@router.put("/{user_id}/role")
+def assign_role_to_user(
+    user_id: int,
+    role_id: int,
+    db: Session = Depends(get_db),
+    user=Depends(require_permission("manage_roles"))
+):
+    return add_role_to_user(user_id, role_id, db, user['sub'])

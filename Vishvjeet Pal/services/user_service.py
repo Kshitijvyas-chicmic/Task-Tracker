@@ -101,3 +101,23 @@ def delete_user(db, user_id: int, actor_id: int):
         entity_id=user_id
     )
     return {"message": "User deleted successfully"}
+
+def add_role_to_user(db, user_id: int, r_id: int, actor_id: int):
+    user = db.query(User).filter(User.e_id == user_id).first()
+
+    if not user:
+        raise HTTPException(404, "User not found")
+
+    user.r_id = r_id
+    db.commit()
+    db.refresh(user)
+    log_activity(
+        db=db,
+        actor_id=actor_id,
+        action="add_role_to_user",
+        entity="user",
+        entity_id=user.e_id,
+        old_value="null",
+        new_value=str({"r_id": r_id})
+    )
+    return user

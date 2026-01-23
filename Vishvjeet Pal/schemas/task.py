@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import List, Optional
 from datetime import date as Date
 
 class TaskCreate(BaseModel):
@@ -25,3 +25,9 @@ class TaskResponse(BaseModel):
     created_by: Optional[int]= None
     class Config:
         from_attributes = True
+
+class TaskListResponse(BaseModel):
+    page: int
+    size: int
+    total: int
+    data: List[TaskResponse]

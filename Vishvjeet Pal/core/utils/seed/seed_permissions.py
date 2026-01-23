@@ -59,7 +59,7 @@ def assign_permissions(db: Session, role: Role, permissions: list[str]):
 def seed_permissions(db: Session):
     manager_role = get_or_create_role(db, "manager")
     employee_role = get_or_create_role(db, "employee")
-    admin_role = get_or_create_role(db, "admin")
+    admin_role = get_or_create_role(db, "Admin")
 
     assign_permissions(db, manager_role, MANAGER_PERMISSIONS)
     assign_permissions(db, employee_role, EMPLOYEE_PERMISSIONS)
