@@ -33,6 +33,56 @@ header {
   font-weight: 500;
 }
 
+/* comments */
+.task-comments {
+  flex: 1;
+  border-left: 1px solid #e5e7eb;
+  padding-left: 15px;
+  display: flex;
+  flex-direction: column;
+  max-height: 220px;  
+}
+
+
+.task-comments h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #4f46e5;
+}
+
+/* Scrollable list */
+.comments-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 6px;
+  margin-bottom: 8px;
+}
+
+
+.comment {
+  font-size: 13px;
+  background: #f3f4f6;
+  padding: 6px 8px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+
+.comment small {
+  display: block;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+
+/* Input fixed at bottom */
+.comment-input {
+  width: 100%;
+  font-size: 13px;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+}
+
 /* Buttons */
 button {
   padding: 10px 20px;
@@ -177,6 +227,8 @@ tr:hover {
 
 /* Task Cards */
 .task-card {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
   background: white;
   padding: 20px;
   margin-bottom: 15px;
@@ -184,6 +236,17 @@ tr:hover {
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   border-left: 4px solid #4f46e5;
   transition: all 0.3s ease;
+}
+
+/* Horizontal split */
+.task-content {
+  display: flex;
+  gap: 20px;
+  min-height: 220px;   /* 👈 critical */
+}
+
+.task-main {
+  flex: 2;
 }
 
 .task-card:hover {
@@ -540,7 +603,7 @@ h3 {
   <!-- TASK FILTERS -->
   <div class="controls-container">
     <div class="filter-section">
-      <div class="filter-group search-box">
+      <!-- <div class="filter-group search-box">
         <label>Search</label>
         <input type="text" id="taskSearch" placeholder="Search tasks..." />
       </div>
@@ -561,7 +624,7 @@ h3 {
           <option value="medium">Medium</option>
           <option value="high">High</option>
         </select>
-      </div>
+      </div> -->
       <div class="filter-group">
         <label>Assigned To</label>
         <input type="number" id="taskAssignedToFilter" placeholder="User ID" />
@@ -572,6 +635,36 @@ h3 {
       <button class="reset-btn" onclick="resetTaskFilters()">Reset</button>
     </div>
   </div>
+
+<div id="updateTaskForm" class="card hidden">
+  <h3>Update Task</h3>
+
+  <form id="updateTaskFormInner">
+    <input type="text" id="newTitle" placeholder="Title"/>
+    <input type="text" id="newDescription" placeholder="Description" />
+
+    <select id="newPriority">
+      <option value="low">Low</option>
+      <option value="medium" selected>Medium</option>
+      <option value="high">High</option>
+    </select>
+
+    <select id="newStatus">
+      <option value="pending" selected>Pending</option>
+      <option value="in_progress">In Progress</option>
+      <option value="completed">Completed</option>
+    </select>
+
+    <input type="date" id="newDeadline" />
+    <input type="number" id="newAssignedTo" placeholder="User ID" />
+
+    <div style="display:flex; gap:10px; margin-top:10px;">
+      <button type="submit">Update Task</button>
+      <button type="button" class="reset-btn" onclick="closeUpdateTask()">Cancel</button>
+    </div>
+  </form>
+</div>
+
 
   <div id="taskList"></div>
 
@@ -597,7 +690,7 @@ h3 {
 <!-- USERS -->
 <section id="users" class="hidden">
   <h3>Users</h3>
-  <button onclick="createUser()" style="margin-bottom: 20px;">+ Add User</button>
+  <button id="addUserBtn" onclick="createUser()" style="margin-bottom: 20px;">+ Add User</button>
   <!-- CREATE USER FORM -->
 <div id="createUserForm" class="card hidden">
   <h3>Create User</h3>
@@ -620,10 +713,6 @@ h3 {
   <!-- USER FILTERS -->
   <div class="controls-container">
     <div class="filter-section">
-      <div class="filter-group search-box">
-        <label>Search</label>
-        <input type="text" id="userSearch" placeholder="Search users..." />
-      </div>
       <div class="filter-group">
         <label>Role ID</label>
         <input type="number" id="userRoleFilter" placeholder="Role ID" />
@@ -662,7 +751,40 @@ h3 {
 <!-- ROLES -->
 <section id="roles" class="hidden">
   <h3>Roles</h3>
-  <button onclick="createRole()" style="margin-bottom: 20px;">+ Add Role</button>
+  <button onclick="openCreateRoleForm()" style="margin-bottom: 20px;">
+  + Add Role
+</button>
+<div id="createRoleForm" class="card hidden">
+  <h3>Create Role</h3>
+
+  <form id="createRoleFormInner">
+    <input
+      type="text"
+      id="roleName"
+      placeholder="Role Name"
+      required
+    />
+
+    <textarea
+      id="rolePermissions"
+      placeholder="Permissions (comma separated)"
+      rows="3"
+      required
+    ></textarea>
+
+    <div style="display:flex; gap:10px; margin-top:10px;">
+      <button type="submit">Create Role</button>
+      <button
+        type="button"
+        class="reset-btn"
+        onclick="closeCreateRoleForm()"
+      >
+        Cancel
+      </button>
+    </div>
+  </form>
+</div>
+
 
   <!-- ROLE FILTERS -->
   <div class="controls-container">
@@ -706,14 +828,14 @@ h3 {
   <!-- LOG FILTERS -->
   <div class="controls-container">
     <div class="filter-section">
-      <div class="filter-group">
+      <!-- <div class="filter-group">
         <label>Action</label>
         <input type="text" id="logActionFilter" placeholder="Action" />
       </div>
       <div class="filter-group">
         <label>Entity</label>
         <input type="text" id="logEntityFilter" placeholder="Entity" />
-      </div>
+      </div> -->
       <div class="filter-group">
         <label>Actor ID</label>
         <input type="number" id="logActorFilter" placeholder="Actor ID" />
@@ -827,9 +949,11 @@ function startApp() {
 
   // UI permission enforcement
   if(!has("view_users")) usersBtn.style.display="none";
-  if(!has("manage_roles")) rolesBtn.style.display="none";
+  if(!has("manage_role")) rolesBtn.style.display="none";
   if(!has("view_audit_logs")) logsBtn.style.display="none";
   if(!has("create_task")) document.getElementById("taskForm").style.display="none";
+  if(!has("create_user")) {document.getElementById("addUserBtn").style.display = "none";}
+
 
   show("tasks");
 }
@@ -848,11 +972,66 @@ function show(id) {
 }
 
 /* ---------- TASKS ---------- */
+
+async function loadComments(taskId) {
+  const container = document.getElementById(`comments-${taskId}`);
+  if (!container) return;
+
+  const res = await api(`/comments/task/${taskId}`);
+  if (!res.ok) {
+    container.innerHTML = `<div class="comment">Failed to load comments</div>`;
+    return;
+  }
+
+  const comments = await res.json();
+  container.innerHTML = "";
+
+  if (!comments.length) {
+    container.innerHTML = `
+      <div style="font-size:12px;color:#9ca3af;">
+        No comments yet
+      </div>`;
+    return;
+  }
+
+  comments.forEach(c => {
+    container.innerHTML += `
+      <div class="comment">
+        ${c.content}
+        <small>
+          User #${c.e_id} ·
+          ${new Date(c.timestamp).toLocaleString()}
+        </small>
+      </div>`;
+  });
+}
+
+async function addComment(e, taskId) {
+  if (e.key !== "Enter") return;
+
+  const text = e.target.value.trim();
+  if (!text) return;
+
+  const res = await api(`/comments/task/${taskId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ content:text })
+  });
+
+  if (!res.ok) {
+    alert("Failed to add comment");
+    return;
+  }
+
+  e.target.value = "";
+  loadComments(taskId); 
+}
+
+
 async function loadTasks() {
   let baseUrl = "/tasks/";
   const filters = { ...taskState.filters };
 
-  // 🔑 assigned_to becomes URL param
   if (filters.assigned_to) {
     baseUrl = `/tasks/${filters.assigned_to}`;
     delete filters.assigned_to;
@@ -868,56 +1047,86 @@ async function loadTasks() {
   const res = await api(`${baseUrl}?${queryString}`);
 
   if (!res.ok) {
-    return taskList.innerHTML=`
+    taskList.innerHTML = `
       <div class="task-card">
         <div class="task-header">
           <div class="task-title">No Tasks Assigned to User ID: ${taskState.filters.assigned_to}</div>
         </div>
-      </div>`
+      </div>`;
+    return;
   }
 
   const data = await res.json();
+  taskList.innerHTML = "";
 
-  taskList.innerHTML="";
-  data.data.forEach(t=>{
+  data.data.forEach(t => {
     const statusClass = `status-${t.status}`;
     const priorityClass = `priority-${t.priority}`;
-    
-    taskList.innerHTML+=`
+
+    taskList.innerHTML += `
       <div class="task-card">
-        <div class="task-header">
-          <div class="task-title">${t.title}</div>
-          <span class="task-status ${statusClass}">${t.status.replace('_', ' ')}</span>
-        </div>
-        <div class="task-details">${t.description || 'No description'}</div>
-        <div class="task-meta">
-          <div class="task-meta-item">
-            <span class="task-meta-label">Priority:</span>
-            <span class="priority-badge ${priorityClass}">${t.priority}</span>
+        <div class="task-content">
+
+          <!-- LEFT: task info -->
+          <div class="task-main">
+            <div class="task-header">
+              <div class="task-title">${t.title}</div>
+              <span class="task-status ${statusClass}">
+                ${t.status.replace("_", " ")}
+              </span>
+            </div>
+
+            <div class="task-details">${t.description || "No description"}</div>
+
+            <div class="task-meta">
+              <div class="task-meta-item">
+                <span class="task-meta-label">Priority:</span>
+                <span class="priority-badge ${priorityClass}">${t.priority}</span>
+              </div>
+
+              ${t.deadline ? `
+              <div class="task-meta-item">
+                <span class="task-meta-label">Deadline:</span>
+                <span>${new Date(t.deadline).toLocaleDateString()}</span>
+              </div>` : ""}
+
+              ${t.assigned_to ? `
+              <div class="task-meta-item">
+                <span class="task-meta-label">Assigned To:</span>
+                <span>User #${t.assigned_to}</span>
+              </div>` : ""}
+
+              ${t.assigned_by ? `
+              <div class="task-meta-item">
+                <span class="task-meta-label">Assigned By:</span>
+                <span>User #${t.assigned_by}</span>
+              </div>` : ""}
+            </div>
+
+            ${has("delete_task") ? `
+            <div class="task-actions">
+              <button class="delete-btn" onclick="deleteTask(${t.task_id})">Delete Task</button>
+              <button class="filter-btn" onclick="updateTask(${t.task_id})">Update Task</button>
+            </div>` : ""}
           </div>
-          ${t.deadline ? `
-          <div class="task-meta-item">
-            <span class="task-meta-label">Deadline:</span>
-            <span>${new Date(t.deadline).toLocaleDateString()}</span>
-          </div>` : ''}
-          ${t.assigned_to ? `
-          <div class="task-meta-item">
-            <span class="task-meta-label">Assigned To:</span>
-            <span>User #${t.assigned_to}</span>
-          </div>` : ''}
-          ${t.assigned_by ? `
-          <div class="task-meta-item">
-            <span class="task-meta-label">Assigned By:</span>
-            <span>User #${t.assigned_by}</span>
-          </div>` : ''}
+
+          <!-- RIGHT: comments -->
+          <div class="task-comments">
+            <h4>Comments</h4>
+
+            <div class="comments-list" id="comments-${t.task_id}">
+              <div style="font-size:12px;color:#9ca3af;">Loading comments…</div>
+            </div>
+
+            <input class="comment-input" placeholder="Add a comment..." onkeydown="addComment(event, ${t.task_id})"/>
+          </div>
+
         </div>
-        ${has("delete_task") ? 
-        `<div class="task-actions">
-          <button class="delete-btn" onclick="deleteTask(${t.task_id})">Delete Task</button>
-        </div>` : ""}
       </div>`;
+      setTimeout(() => loadComments(t.task_id), 0);
   });
-  
+
+
   updateTaskPagination(data.total, data.page, data.size);
 }
 
@@ -938,23 +1147,23 @@ function applyTaskFilters() {
   taskState.filters = {};
   taskState.page = 1;
   
-  const search = document.getElementById('taskSearch').value.trim();
-  const status = document.getElementById('taskStatusFilter').value;
-  const priority = document.getElementById('taskPriorityFilter').value;
+  // const search = document.getElementById('taskSearch').value.trim();
+  // const status = document.getElementById('taskStatusFilter').value;
+  // const priority = document.getElementById('taskPriorityFilter').value;
   const assignedTo = document.getElementById('taskAssignedToFilter').value;
   
-  if (search) taskState.filters.search = search;
-  if (status) taskState.filters.status = status;
-  if (priority) taskState.filters.priority = priority;
+  // if (search) taskState.filters.search = search;
+  // if (status) taskState.filters.status = status;
+  // if (priority) taskState.filters.priority = priority;
   if (assignedTo) taskState.filters.assigned_to = assignedTo;
   
   loadTasks();
 }
 
 function resetTaskFilters() {
-  document.getElementById('taskSearch').value = '';
-  document.getElementById('taskStatusFilter').value = '';
-  document.getElementById('taskPriorityFilter').value = '';
+  // document.getElementById('taskSearch').value = '';
+  // document.getElementById('taskStatusFilter').value = '';
+  // document.getElementById('taskPriorityFilter').value = '';
   document.getElementById('taskAssignedToFilter').value = '';
   taskState.filters = {};
   taskState.page = 1;
@@ -1012,24 +1221,79 @@ async function deleteTask(id) {
   loadTasks();
 }
 
+// document.getElementById("updateTaskForm").onsubmit = async function(e) {
+
+let currentTaskId = null;
+
+/* ---------- OPEN UPDATE FORM ---------- */
+function updateTask(id) {
+  currentTaskId = id;
+  document.getElementById("updateTaskForm").classList.remove("hidden");
+}
+
+/* ---------- SUBMIT UPDATE ---------- */
+document
+  .getElementById("updateTaskFormInner")
+  .addEventListener("submit", updateTaskForm);
+
+async function updateTaskForm(e) {
+  e.preventDefault();
+
+  const title = document.getElementById("newTitle").value;
+  const description = document.getElementById("newDescription").value;
+  const priority = document.getElementById("newPriority").value;
+  const status = document.getElementById("newStatus").value;
+  const deadline = document.getElementById("newDeadline").value || null;
+  const assigned_to = document.getElementById("newAssignedTo").value || null;
+
+  const res = await api(`/tasks/edit/${currentTaskId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      title,
+      description,
+      priority,
+      status,
+      deadline,
+      assigned_to: assigned_to ? parseInt(assigned_to) : null
+    })
+  });
+
+  if (!res.ok) {
+    alert("Failed to update task");
+    return;
+  }
+
+  document.getElementById("updateTaskFormInner").reset();
+  closeUpdateTask();
+  loadTasks();
+}
+
+/* ---------- CLOSE FORM ---------- */
+function closeUpdateTask() {
+  document.getElementById("updateTaskForm").classList.add("hidden");
+  currentTaskId = null;
+}
+
+
 /* ---------- USERS ---------- */
 async function loadUsers() {
   let baseUrl = "/users/";
   const filters = { ...userState.filters };
 
-  if (filters.role_id) {
-    baseUrl = `/users/${filters.role_id}`;
-    delete filters.role_id;
+  if (filters.user_id) {
+    baseUrl = `/users/${filters.user_id}`;
+    delete filters.user_id;
   }
 
-  const params = {
-    page: userState.page,
-    size: userState.size,
-    ...filters
-  };
+  // const params = {
+  //   page: userState.page,
+  //   size: userState.size,
+  //   ...filters
+  // };
 
-  const queryString = buildQueryString(params);
-  const res = await api(`${baseUrl}?${queryString}`);
+  // const queryString = buildQueryString(params);
+  const res = await api(`${baseUrl}`);
   const data = await res.json();
   
   userTable.innerHTML="";
@@ -1042,6 +1306,8 @@ async function loadUsers() {
         <td>
           ${has("update_user") ?
           `<button onclick="assignRole(${u.e_id})">Change Role</button>`:""}
+          ${has("delete_user") ? 
+          `<button class="delete-btn" onclick="deleteUser(${u.e_id})">Delete User</button>`:""}
         </td>
       </tr>`;
   });
@@ -1066,18 +1332,24 @@ function applyUserFilters() {
   userState.filters = {};
   userState.page = 1;
 
-  const search = userSearch.value.trim();
+  // const search = userSearch.value.trim();
   const role = userRoleFilter.value.trim();
 
-  if (search) userState.filters.search = search;
-  if (role) userState.filters.user_id = role; // 🔑 now path param
+  // if (search) userState.filters.search = search;
+  if (role) userState.filters.user_id = role; 
 
+  loadUsers();
+}
+
+async function deleteUser(id) {
+  if(!confirm("Delete?")) return;
+  await api(`/users/${id}`,{ method:"DELETE" });
   loadUsers();
 }
 
 
 function resetUserFilters() {
-  document.getElementById('userSearch').value = '';
+  // document.getElementById('userSearch').value = '';
   document.getElementById('userRoleFilter').value = '';
   userState.filters = {};
   userState.page = 1;
@@ -1120,11 +1392,14 @@ async function loadRoles() {
   const data = await res.json();
   
   roleList.innerHTML="";
-  data.data.forEach(r=>{
+  data.forEach(r=>{
     roleList.innerHTML+=`
       <div class="card">
-        <b>${r.name}</b><br>
+        <b>${r.role}</b><br>
         <span style="color: #6b7280; font-size: 14px;">${r.permissions.join(", ")}</span>
+        <div>
+        <button class="delete-btn" onclick="deleteRole(${r.r_id})">Delete Role</button>
+        </div>
       </div>`;
   });
   
@@ -1179,26 +1454,59 @@ function changeRolePageSize() {
   loadRoles();
 }
 
-async function createRole() {
-  const name = prompt("Role name");
-  if(!name) return;
+document
+  .getElementById("createRoleFormInner")
+  .addEventListener("submit", createRole);
 
-  const permsRes = await api("/permissions/");
-  const perms = await permsRes.json();
+async function createRole(e) {
+  e.preventDefault();
 
-  const selected = prompt(
-    "Permissions (comma separated):\n"+perms.map(p=>p.name).join(",")
-  );
+  const name = document.getElementById("roleName").value.trim();
+  const permsInput = document
+    .getElementById("rolePermissions")
+    .value.trim();
 
-  await api("/roles/",{
-    method:"POST",
-    body:JSON.stringify({
-      name,
-      permissions: selected.split(",").map(p=>p.trim())
-    })
+  if (!name || !permsInput) {
+    alert("All fields are required");
+    return;
+  }
+
+  const permissions = permsInput
+    .split(",")
+    .map(p => p.trim())
+    .filter(Boolean);
+
+  const res = await api("/roles/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ role: name, permissions: permissions })
   });
+
+  if (!res.ok) {
+    alert("Failed to create role");
+    return;
+  }
+
+  closeCreateRoleForm();
   loadRoles();
 }
+
+
+async function deleteRole(r_id){
+  if(!confirm("Delete?")) return;
+  await api(`/roles/${r_id}`,{ method:"DELETE" });
+  loadRoles();
+}
+
+function openCreateRoleForm() {
+  document.getElementById("createRoleForm").classList.remove("hidden");
+}
+
+function closeCreateRoleForm() {
+  document.getElementById("createRoleForm").classList.add("hidden");
+  document.getElementById("createRoleFormInner").reset();
+}
+
 
 /* ---------- LOGS ---------- */
 async function loadLogs() {
@@ -1206,7 +1514,7 @@ async function loadLogs() {
   const filters = { ...logState.filters };
 
   if (filters.actor_id) {
-    baseUrl = `/activity-logs${filters.actor_id}/`;
+    baseUrl = `/activity-logs/${filters.actor_id}`;
     delete filters.actor_id;
   }
 
@@ -1251,20 +1559,20 @@ function applyLogFilters() {
   logState.filters = {};
   logState.page = 1;
   
-  const action = document.getElementById('logActionFilter').value.trim();
-  const entity = document.getElementById('logEntityFilter').value.trim();
+  // const action = document.getElementById('logActionFilter').value.trim();
+  // const entity = document.getElementById('logEntityFilter').value.trim();
   const actor = document.getElementById('logActorFilter').value;
   
-  if (action) logState.filters.action = action;
-  if (entity) logState.filters.entity = entity;
+  // if (action) logState.filters.action = action;
+  // if (entity) logState.filters.entity = entity;
   if (actor) logState.filters.actor_id = actor;
   
   loadLogs();
 }
 
 function resetLogFilters() {
-  document.getElementById('logActionFilter').value = '';
-  document.getElementById('logEntityFilter').value = '';
+  // document.getElementById('logActionFilter').value = '';
+  // document.getElementById('logEntityFilter').value = '';
   document.getElementById('logActorFilter').value = '';
   logState.filters = {};
   logState.page = 1;

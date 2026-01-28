@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException
 from jose import jwt, JWTError
 from sqlalchemy import text
 from sqlalchemy.orm import Session

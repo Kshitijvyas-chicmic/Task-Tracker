@@ -17,7 +17,7 @@ def assign_admin(user_email: str, db: Session):
         print("Admin role not found")
         return
     user.role = admin_role
-    db.commit()
+    db.commit()      
     print(f"{user.name} is now an admin!")
 
 if __name__ == "__main__":
