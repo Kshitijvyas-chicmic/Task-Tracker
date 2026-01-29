@@ -13,6 +13,7 @@ class Task(Base):
     deadline = Column(Date, nullable=True)
     assigned_to  = Column(Integer, ForeignKey("users.e_id"), nullable=True)
     created_by= Column(Integer, ForeignKey("users.e_id"))
-
+    last_escalated_level = Column(Integer, default=0, nullable=False)
+    
     assignee = relationship("User", foreign_keys=[assigned_to])
     creator = relationship("User", foreign_keys=[created_by])
