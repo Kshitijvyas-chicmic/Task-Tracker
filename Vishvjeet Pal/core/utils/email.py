@@ -1,18 +1,12 @@
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-
+import resend
 from core.utils.config import settings
 
-def send_email(to_email: str, subject: str, body: str):
-    msg = MIMEMultipart()
-    msg["From"] = settings.SMTP_FROM
-    msg["To"] = to_email
-    msg["Subject"] = subject
+resend.api_key = settings.RESEND_API_KEY
+def send_email(to_email: str, subject: str, content: str):
+    resend.Emails.send({
+        "from": settings.EMAIL_FROM,
+        "to": to_email,
+        "subject": subject,
+        "html": f"<p>{content}</p>"
+    })
 
-    msg.attach(MIMEText(body, "plain"))
-
-    with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
-        server.starttls()
-        server.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD)
-        server.send_message(msg)

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Date
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from core.utils.database import Base
 
@@ -10,7 +10,7 @@ class Task(Base):
     description = Column(String)
     status = Column(String, default="pending")
     priority = Column(String, default="medium")
-    deadline = Column(Date, nullable=True)
+    deadline = Column(DateTime, nullable=True)
     assigned_to  = Column(Integer, ForeignKey("users.e_id"), nullable=True)
     created_by= Column(Integer, ForeignKey("users.e_id"))
     last_escalated_level = Column(Integer, default=0, nullable=False)
