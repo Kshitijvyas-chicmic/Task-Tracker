@@ -111,10 +111,10 @@ def _resolve_email(task, notify_role, db):
         return (user.name,user.email) if user else None 
     
     if notify_role == "manager":
-        manager = db.query(User).filter(User.e_id == task.created_by).first()
+        manager = db.query(User).filter(User.r_id == 2).first()
         return (manager.name,manager.email) if manager else None 
     
     if notify_role == "admin":
-        admin = db.query(User).filter(User.role == "admin").first()
+        admin = db.query(User).filter(User.r_id == 1).first()
         return (admin.name,admin.email) if admin else None
     return None

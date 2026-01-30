@@ -14,7 +14,7 @@ from core.utils.database import Base
 from core.utils.deps import get_db
 from main import app
 
-# 🔹 Test database (SEPARATE)
+# Test database (SEPARATE)
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 
 engine = create_engine(
@@ -28,20 +28,38 @@ TestingSessionLocal = sessionmaker(
     bind=engine
 )
 
-# 🔹 Create tables once
+# Create tables once
 Base.metadata.create_all(bind=engine)
 
-# 🔹 Dependency override
-def override_get_db():
-    db = TestingSessionLocal()
-    try:
-        yield db
-    finally:
-        db.rollback()
-        db.close()
-
-app.dependency_overrides[get_db] = override_get_db
+# Dependency override
 
 @pytest.fixture(scope="function")
-def client():
-    return TestClient(app)
+def db_session():
+    connection = engine.connect()
+    transaction = connection.begin()
+
+    session = TestingSessionLocal(bind=connection)
+
+    yield session
+
+    session.close()
+    transaction.rollback()
+    connection.close()
+
+
+@pytest.fixture(scope="function")
+def client(db_session):
+    def override_get_db():
+        try:
+            yield db_session
+        finally:
+            pass  # rollback handled by fixture
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    with TestClient(app) as c:
+        yield c
+
+    app.dependency_overrides.clear()
+
+
