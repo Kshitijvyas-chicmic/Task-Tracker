@@ -1,13 +1,13 @@
 from pydantic import BaseModel
 from typing import List, Optional
-from datetime import date as Date
+from datetime import datetime
 
 class TaskCreate(BaseModel):
     title: str
     description: str
     status: Optional[str]= "pending"
     priority: Optional[str]= "medium"
-    deadline: Optional[Date]= None
+    deadline: Optional[datetime]= None
     assigned_to: Optional[int]= None
     created_by: Optional[int]= None
 
@@ -20,7 +20,7 @@ class TaskResponse(BaseModel):
     description: str
     status: Optional[str]= "pending"
     priority: Optional[str]= "medium"
-    deadline: Optional[Date]= None
+    deadline: Optional[datetime]= None
     assigned_to: Optional[int]= None
     created_by: Optional[int]= None
     class Config:
