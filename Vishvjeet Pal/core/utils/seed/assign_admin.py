@@ -12,12 +12,12 @@ def assign_admin(user_email: str, db: Session):
     if not user:
         print("User not found")
         return
-    admin_role = db.query(Role).filter(Role.name=="admin").first()
+    admin_role = db.query(Role).filter(Role.name=="Admin").first()
     if not admin_role:
         print("Admin role not found")
         return
     user.role = admin_role
-    db.commit()
+    db.commit()      
     print(f"{user.name} is now an admin!")
 
 if __name__ == "__main__":

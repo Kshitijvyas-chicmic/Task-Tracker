@@ -38,7 +38,7 @@ def get_all_tasks(db: Session, actor_id: int, offset: int, limit: int) :
     return total,[TaskResponse(task_id=task.task_id, title=task.title, description=task.description, status=task.status, priority=task.priority, deadline=task.deadline, assigned_to=task.assigned_to, created_by=task.created_by) for task in tasks]
 
 def update_task(db, task_id: int, task_data, user: dict):
-    task = db.query(Task).filter(Task.id == task_id).first()
+    task = db.query(Task).filter(Task.task_id == task_id).first()
 
     if not task:
         raise HTTPException(
@@ -57,7 +57,7 @@ def update_task(db, task_id: int, task_data, user: dict):
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You can only edit your assigned tasks"
             )
-
+    task_data.created_by = user_id  # Prevent changing creator
     for field, value in task_data.dict(exclude_unset=True).items():
         setattr(task, field, value)
 
@@ -73,7 +73,7 @@ def update_task(db, task_id: int, task_data, user: dict):
         old_value=str(task_data.dict(exclude_unset=True)),
         new_value=str({field: getattr(task, field) for field in task_data.dict(exclude_unset=True).keys()})
     )
-    return task
+    return TaskResponse(task_id=task.task_id, title=task.title, description=task.description, status=task.status, priority=task.priority, deadline=task.deadline, assigned_to=task.assigned_to, created_by=task.created_by)
 
 def delete_task_service(db, task_id: int, user: dict):
     task = db.query(Task).filter(Task.task_id == task_id).first()

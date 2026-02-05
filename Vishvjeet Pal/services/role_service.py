@@ -32,7 +32,7 @@ def create_role(db: Session, role_data: RoleCreate, actor_id: int) -> RoleRespon
     return RoleResponse(
         r_id=role.r_id,  
         role=role.name,
-        permissions=[permission.name for permission in role.permissions]  # Assuming 'name' is the field in Permission
+        permissions=[permission.name for permission in role.permissions]  
     )
 
 def get_all_roles(db: Session, actor_id: int) -> list[RoleResponse]:

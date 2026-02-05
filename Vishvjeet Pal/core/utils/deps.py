@@ -1,10 +1,10 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException
 from jose import jwt, JWTError
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from core.utils.database import SessionLocal
 from core.utils.config import settings
-from models.user import User
 
 ALGORITHM = "HS256"
 
@@ -19,6 +19,8 @@ def get_current_user(
     token: str = Depends(lambda: None),
     db: Session = Depends(get_db)
 ):
+    from models.user import User
+
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("sub")

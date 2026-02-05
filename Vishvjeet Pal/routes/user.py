@@ -2,9 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from core.utils.deps import get_db, get_current_user
 from schemas.user import UserCreate, UserResponse
-from services.user_service import create_user, get_all_users, update_user, delete_user
+from services.user_service import create_user, get_all_users, update_user, delete_user, get_user_by_id
 from core.utils.permissions import require_permission
 from core.utils.pagination import pagination_params
+from services.user_service import add_role_to_user
 
 router=APIRouter(prefix="/users", tags=["Users"])
 
@@ -22,6 +23,15 @@ def list_users(pagination=Depends(pagination_params),current_user=Depends(requir
         "data": users
     }
 
+@router.get("/{role_id}")
+def get_user_id(role_id: int, db: Session = Depends(get_db), current_user=Depends(require_permission("view_users")), pagination=Depends(pagination_params)):
+    total, users = get_user_by_id(db, role_id, current_user['sub'], pagination['offset'], pagination['size'])
+    return {
+        "page": pagination["page"],
+        "size": pagination["size"],
+        "total": total,
+        "data": users
+    }
 @router.put("/{user_id}", response_model=UserResponse)
 def update_user_route(
     user_id: int,
@@ -38,3 +48,12 @@ def delete_user_route(
     current_user=Depends(require_permission("delete_user"))
 ):
     return delete_user(db, user_id, current_user['sub'])
+
+@router.put("/{user_id}/role")
+def assign_role_to_user(
+    user_id: int,
+    role_id: int,
+    db: Session = Depends(get_db),
+    user=Depends(require_permission("manage_role"))
+):
+    return add_role_to_user(db,user_id, role_id, user['sub'])

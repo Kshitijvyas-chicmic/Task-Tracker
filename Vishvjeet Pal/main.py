@@ -7,8 +7,18 @@ from routes.task import router as task_router
 from routes.comment import router as comment_router
 from routes.auth import router as auth_router
 from routes.activity_log import router as activity_log_router
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Task Tracker")
+app = FastAPI(title="Task Tracker", redirect_slashes=False)
+app.dependency_overrides.clear()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # development only
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(user_router)
 app.include_router(role_router)

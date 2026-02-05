@@ -38,7 +38,6 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
             settings.SECRET_KEY,
             algorithms=[ALGORITHM]
         )
-        print(payload)
         user_id: str = payload.get("sub")
         if user_id is None:
             raise credentials_exception

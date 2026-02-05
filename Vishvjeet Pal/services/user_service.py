@@ -29,17 +29,21 @@ def create_user(db, user_data: UserCreate, actor_id: int):
 
     return user
 
-def get_user_by_id(db: Session, e_id: int, actor_id: int):
+def get_user_by_id(db: Session, r_id: int, actor_id: int, offset: int, limit: int):
     
+    query = db.query(User).filter(User.r_id==r_id)
+    total = query.count()
+    users = query.offset(offset).limit(limit).all()
+
     log_activity(
         db=db,
         actor_id=actor_id,
         action="get_user_by_id",
         entity="user",
-        entity_id=e_id
+        entity_id=r_id
     )
 
-    return db.query(User).filter(User.e_id == e_id).first()
+    return total, [UserResponse(e_id= user.e_id, name= user.name, team=user.team, mobile=user.mobile, email=user.email, r_id=user.r_id) for user in users]
 
 
 def get_all_users(db: Session, actor_id: int, offset: int, limit: int):
@@ -101,3 +105,23 @@ def delete_user(db, user_id: int, actor_id: int):
         entity_id=user_id
     )
     return {"message": "User deleted successfully"}
+
+def add_role_to_user(db, user_id: int, r_id: int, actor_id: int):
+    user = db.query(User).filter(User.e_id == user_id).first()
+
+    if not user:
+        raise HTTPException(404, "User not found")
+
+    user.r_id = r_id
+    db.commit()
+    db.refresh(user)
+    log_activity(
+        db=db,
+        actor_id=actor_id,
+        action="add_role_to_user",
+        entity="user",
+        entity_id=user.e_id,
+        old_value="null",
+        new_value=str({"r_id": r_id})
+    )
+    return UserResponse(e_id=user.e_id, name=user.name, team=user.team, mobile=user.mobile, email=user.email, r_id=user.r_id)

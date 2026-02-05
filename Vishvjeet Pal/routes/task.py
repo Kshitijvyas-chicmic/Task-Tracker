@@ -5,7 +5,7 @@ from core.utils.deps import get_db
 from core.utils.permissions import require_permission
 from core.utils.pagination import pagination_params
 from services.task_service import assign_task, create_task, get_all_tasks, update_task, delete_task_service
-from schemas.task import TaskAssign, TaskCreate, TaskResponse
+from schemas.task import TaskAssign, TaskCreate, TaskListResponse, TaskResponse
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"])
 
@@ -24,7 +24,7 @@ def add_task(
 
 @router.get(
     "/",
-    response_model=list[TaskResponse]
+    response_model=TaskListResponse
 )
 def list_tasks(
     pagination=Depends(pagination_params),

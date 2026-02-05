@@ -18,15 +18,15 @@ MANAGER_PERMISSIONS = [
     "view_team_workload", "generate_reports", "view_dashboard",
     "receive_notifications", "approve_task", "create_recurring_task",
     "schedule_task", "export_data", "share_project_summary",
-    "view_all_team_activities"
+    "view_all_team_activities", "delete_comment"
 ]
 
 EMPLOYEE_PERMISSIONS = [
     "view_task", "update_task_status", "add_task_comment", "view_audit_logs", "attach_task_file",
-    "mention_team_member", "view_dashboard", "receive_notifications",
+    "mention_team_member", "view_dashboard", "receive_notifications", "view_comments"
 ]
 
-ADMIN_PERMISSIONS = ["create_user", "update_user", "delete_user", "create_role", "view_role", "update_role", "delete_role", "create_role"] + MANAGER_PERMISSIONS + EMPLOYEE_PERMISSIONS  # Full access
+ADMIN_PERMISSIONS = ["create_user", "update_user", "delete_user", "create_role", "view_role", "update_role", "delete_role", "create_role","manage_role"] + MANAGER_PERMISSIONS + EMPLOYEE_PERMISSIONS  # Full access
 
 def get_or_create_role(db: Session, name: str) -> Role:
     role = db.query(Role).filter(Role.name == name).first()
@@ -59,7 +59,7 @@ def assign_permissions(db: Session, role: Role, permissions: list[str]):
 def seed_permissions(db: Session):
     manager_role = get_or_create_role(db, "manager")
     employee_role = get_or_create_role(db, "employee")
-    admin_role = get_or_create_role(db, "admin")
+    admin_role = get_or_create_role(db, "Admin")
 
     assign_permissions(db, manager_role, MANAGER_PERMISSIONS)
     assign_permissions(db, employee_role, EMPLOYEE_PERMISSIONS)
