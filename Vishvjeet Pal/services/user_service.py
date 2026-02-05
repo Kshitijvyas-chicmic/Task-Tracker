@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from models.user import User
-from schemas.user import UserCreate
+from schemas.user import UserCreate, UserResponse
 from core.utils.security import hash_password
 from services.activity_log_service import log_activity
 
@@ -29,14 +29,31 @@ def create_user(db, user_data: UserCreate, actor_id: int):
 
     return user
 
-def get_user_by_id(db: Session, e_id: int):
+def get_user_by_id(db: Session, e_id: int, actor_id: int):
+    
+    log_activity(
+        db=db,
+        actor_id=actor_id,
+        action="get_user_by_id",
+        entity="user",
+        entity_id=e_id
+    )
+
     return db.query(User).filter(User.e_id == e_id).first()
 
-def get_user_by_email(db: Session, email: str):
-    return db.query(User).filter(User.email == email).first()
 
-def get_all_users(db: Session):
-    return db.query(User).all()
+def get_all_users(db: Session, actor_id: int, offset: int, limit: int):
+
+    query = db.query(User)
+    total=query.count()
+    users = query.offset(offset).limit(limit).all()
+    log_activity(
+        db=db,
+        actor_id=actor_id,
+        action="get_all_users",
+        entity="user",
+    )
+    return total, [UserResponse(e_id= user.e_id, name= user.name, team=user.team, mobile=user.mobile, email=user.email, r_id=user.r_id) for user in users]
 
 def update_user(db, user_id: int, data, current_user: dict):
     user = db.query(User).filter(User.e_id == user_id).first()
@@ -56,10 +73,19 @@ def update_user(db, user_id: int, data, current_user: dict):
 
     db.commit()
     db.refresh(user)
+    log_activity(
+        db=db,
+        actor_id=int(current_user["sub"]),
+        action="update_user",
+        entity="user",
+        entity_id=user.e_id,
+        old_value=str(data.dict(exclude_unset=True)),
+        new_value=str({field: getattr(user, field) for field in data.dict(exclude_unset=True).keys()})
+    )
     return user
 
 
-def delete_user(db, user_id: int):
+def delete_user(db, user_id: int, actor_id: int):
     user = db.query(User).filter(User.e_id == user_id).first()
 
     if not user:
@@ -67,4 +93,11 @@ def delete_user(db, user_id: int):
 
     db.delete(user)
     db.commit()
+    log_activity(
+        db=db,
+        actor_id=actor_id,
+        action="delete_user",
+        entity="user",
+        entity_id=user_id
+    )
     return {"message": "User deleted successfully"}

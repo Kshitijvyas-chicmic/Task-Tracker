@@ -6,6 +6,7 @@ from routes.role import router as role_router
 from routes.task import router as task_router
 from routes.comment import router as comment_router
 from routes.auth import router as auth_router
+from routes.activity_log import router as activity_log_router
 
 app = FastAPI(title="Task Tracker")
 
@@ -14,3 +15,4 @@ app.include_router(role_router)
 app.include_router(task_router)
 app.include_router(comment_router)
 app.include_router(auth_router)
+app.include_router(activity_log_router)
