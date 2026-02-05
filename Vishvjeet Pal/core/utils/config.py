@@ -15,5 +15,10 @@ class Setting:
     RATE_LIMIT_REQUESTS: int = int(os.getenv("RATE_LIMIT_REQUESTS", 100))
     RATE_LIMIT_WINDOW_SECONDS: int = int(os.getenv("RATE_LIMIT_WINDOW_SECONDS", 60))
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY")
+    CEREBRAS_API_KEY=os.getenv("CEREBRAS_API_KEY")
+    SAMBANOVA_API_KEY=os.getenv("SAMBANOVA_API_KEY")
+    REDIS_HOST = os.getenv("REDIS_HOST")
+    REDIS_PORT = os.getenv("REDIS_PORT")
+
 
 settings=Setting()
