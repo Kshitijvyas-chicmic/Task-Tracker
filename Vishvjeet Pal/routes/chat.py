@@ -1,12 +1,31 @@
-from fastapi import APIRouter, HTTPException
-import llm.rag_state as rag_state
+# routes/chat.py
+from fastapi import APIRouter, HTTPException, Query
+from agent.runtime import agent
+from typing import Optional
 
-router=APIRouter(prefix="/chat", tags=["Chat"])
+router = APIRouter(prefix="/chat", tags=["Chat"])
 
 @router.post("/")
-def chat(query: str):
-    if rag_state.rag_chain is None:
-        raise HTTPException(status_code=500, detail="RAG bot not initialized")
-    
-    result = rag_state.rag_chain.invoke(query)
-    return {"answer":result}
+def chat(query: str, thread_id: Optional[str] = Query("default-session")):
+    """
+    Endpoint to interact with the LangGraph Task Agent.
+    """
+    try:
+        config = {"configurable": {"thread_id": thread_id}}
+        
+        response = agent.invoke(
+            {"messages": [{"role": "user", "content": query}]}, 
+            config=config
+        )
+        
+        messages = response.get("messages", [])
+        if not messages:
+            return {"answer": "Agent processed the request but returned no message.", "thread_id": thread_id}
+            
+        return {
+            "answer": messages[-1].content,
+            "thread_id": thread_id
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Agent Error: {str(e)}")

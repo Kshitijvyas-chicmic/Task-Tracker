@@ -34,7 +34,8 @@ def list_tasks() -> str:
             redis_client.set(cache_key, json.dumps(tasks))
         finally:
             db.close()
-
+    if not tasks:
+        return "No tasks found"
     return "Here are your tasks:\n" + "\n".join(
         f"Task #{t['id']}: {t['title']} ({t['status']})"
         for t in tasks
@@ -348,6 +349,6 @@ def list_roles() -> str:
         return "No roles found in the system."
 
     return "System Roles and Permissions:\n" + "\n".join(
-        f"Role #{r['id']} ({r['name']}): Permissions = {', '.join(r['permissions'])}"
+        f"Role #{r['id']} ({r['name']})"
         for r in roles_data
     )
