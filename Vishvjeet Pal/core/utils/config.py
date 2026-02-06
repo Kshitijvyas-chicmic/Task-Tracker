@@ -11,4 +11,14 @@ class Setting:
     RESEND_API_KEY: str = os.getenv("RESEND_API_KEY")
     EMAIL_FROM: str = os.getenv("EMAIL_FROM")
 
+    RATE_LIMIT_ENABLED: bool = os.getenv("RATE_LIMIT_ENABLED", "True").lower() in ("1", "true", "yes")
+    RATE_LIMIT_REQUESTS: int = int(os.getenv("RATE_LIMIT_REQUESTS", 100))
+    RATE_LIMIT_WINDOW_SECONDS: int = int(os.getenv("RATE_LIMIT_WINDOW_SECONDS", 60))
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY")
+    CEREBRAS_API_KEY=os.getenv("CEREBRAS_API_KEY")
+    SAMBANOVA_API_KEY=os.getenv("SAMBANOVA_API_KEY")
+    REDIS_HOST = os.getenv("REDIS_HOST")
+    REDIS_PORT = os.getenv("REDIS_PORT")
+
+
 settings=Setting()

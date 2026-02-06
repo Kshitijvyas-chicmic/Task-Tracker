@@ -1,0 +1,2 @@
+rag_chain=None
+retriever=None
