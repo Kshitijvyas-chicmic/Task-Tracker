@@ -36,7 +36,7 @@ def list_tasks() -> str:
             db.close()
     if not tasks:
         return "No tasks found"
-    return "Here are your tasks:\n" + "\n".join(
+    return "Here are your tasks:" + "\n".join(
         f"Task #{t['id']}: {t['title']} ({t['status']})"
         for t in tasks
     )
@@ -138,6 +138,30 @@ def add_comment(task_id: int, content: str) -> str:
         db.close()
 
 @tool
+def delete_comment(comment_id: int) -> str:
+    """
+    Delete a specific comment by its ID.
+    Args:
+        comment_id: The unique ID of the comment to remove.
+    """
+    db = SessionLocal()
+    try:
+        comment = db.query(Comment).filter(Comment.c_id == comment_id).first()
+        if not comment:
+            return f"Comment #{comment_id} not found."
+        
+        task_id = comment.task_id  
+        db.delete(comment)
+        db.commit()
+
+        cache_key = f"task:{task_id}:comments"
+        redis_client.delete(cache_key)
+
+        return f"Comment #{comment_id} deleted successfully."
+    finally:
+        db.close()
+
+@tool
 def list_comments(task_id: int) -> str:
     """List comments for a specific task."""
 
@@ -197,7 +221,7 @@ def list_users() -> str:
     if not users:
         return "No users found."
 
-    return "Here are the users:\n" + "\n".join(
+    return "Here are the users:" + "\n".join(
         f"User #{u['id']}: {u['name']} (role={u['role']})"
         for u in users
     )

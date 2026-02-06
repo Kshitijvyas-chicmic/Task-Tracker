@@ -16,7 +16,27 @@ from core.utils.rate_limiter import RateLimitMiddleware, global_limiter
 
 from core.utils.redis_checkpointer import checkpointer, _saver_context
 
-app = FastAPI(title="Task Tracker", redirect_slashes=False)
+from contextlib import asynccontextmanager
+from mcp.client.stdio import stdio_client
+from mcp import ClientSession
+from core.utils.mcp_config import server_params
+mcp_state = {"session": None, "cleanup": None}
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # STARTUP: Connect to MCP Server
+    async with stdio_client(server_params) as (read, write):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            mcp_state["session"] = session
+            print("Successfully connected to Task Agent MCP Server")
+            yield
+    # SHUTDOWN: Connection closes automatically here
+    print("Disconnected from MCP Server")
+
+app = FastAPI(title="Task Tracker", lifespan=lifespan, redirect_slashes=False)
+
+app.add_middleware(RateLimitMiddleware, limiter=global_limiter, enabled=settings.RATE_LIMIT_ENABLED)
 
 app.add_middleware(
     CORSMiddleware,
@@ -25,8 +45,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-app.add_middleware(RateLimitMiddleware, limiter=global_limiter, enabled=settings.RATE_LIMIT_ENABLED)
 
 app.include_router(user_router)
 app.include_router(role_router)

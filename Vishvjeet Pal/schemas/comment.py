@@ -10,7 +10,7 @@ class CommentCreate(BaseModel):
 class CommentResponse(BaseModel):
     c_id: int
     task_id: int
-    e_id: int
+    e_id: Optional[int] = None
     content: str
     timestamp: datetime
 

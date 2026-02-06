@@ -94,3 +94,5 @@ async def llm_execute(prompt: str) -> str:
 # 3. Export for ASGI
 app = mcp.http_app()
 
+if __name__ == "__main__":
+    mcp.run()

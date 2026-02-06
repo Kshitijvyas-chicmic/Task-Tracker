@@ -4,19 +4,19 @@ from langchain.agents import create_agent
 from core.utils.redis_checkpointer import checkpointer
 # from langchain_openai import ChatOpenAI
 from langchain_groq import ChatGroq
-from agent.tools import list_tasks, create_task, delete_task, add_comment, list_comments, list_users, create_user, delete_user, update_user, list_roles
+from agent.tools import list_tasks, create_task, delete_task, add_comment, list_comments, list_users, create_user, delete_user, update_user, list_roles, delete_comment
 import os
 from core.utils.config import settings
 
 # memory = InMemorySaver()
 
 # 1. Define tools
-tools = [list_tasks, create_task, delete_task, add_comment, list_comments, list_users, create_user, delete_user, update_user, list_roles]
+tools = [list_tasks, create_task, delete_task, add_comment, list_comments, list_users, create_user, delete_user, update_user, list_roles, delete_comment]
 
 # 2. Initialize LLM
 llm = ChatGroq(
-    model="llama-3.3-70b-versatile", # Groq's specific model ID
-    api_key=settings.GROQ_API_KEY,   # Ensure this key is in your settings
+    model="llama-3.3-70b-versatile", 
+    api_key=settings.GROQ_API_KEY,   
     temperature=0.2
 )
 
