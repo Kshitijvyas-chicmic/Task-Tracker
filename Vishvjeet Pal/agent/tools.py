@@ -5,6 +5,7 @@ import json
 from models.task import Task
 from models.comment import Comment
 from models.user import User
+from models.role import Role
 
 
 @tool
@@ -198,4 +199,155 @@ def list_users() -> str:
     return "Here are the users:\n" + "\n".join(
         f"User #{u['id']}: {u['name']} (role={u['role']})"
         for u in users
+    )
+
+@tool
+def create_user(name: str, email: str, mobile, team: str, password: str, r_id: int):
+    """
+    Create / add user in the database with the given values.
+    arguments:
+    :param name: Description
+    :type name: str
+    :param email: Description
+    :type email: str
+    :param mobile: Description
+    :param team: Description
+    :type team: str
+    :param password: Description
+    :type password: str
+    :param r_id: Description
+    :type r_id: int
+    """
+    db = SessionLocal()
+    try:
+        user=User(
+            name=name,
+            email=email,
+            mobile=mobile,
+            team=team,
+            password=password,
+            r_id=r_id
+        )
+
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        cache_key="users:all"
+        cached=redis_client.get(cache_key)
+
+        if cached:
+            users=json.load(cached)
+            users.append({
+                "id": user.e_id,
+                "name": user.name,
+                "team": user.team,
+                "r_id": user.r_id
+            })
+
+            redis_client.set(cache_key,json.dumps(users))
+        return f"User #{user.e_id} created successfully"
+    finally:
+        db.close()
+
+@tool
+def delete_user(user_id: int) -> str:
+    """
+    Delete the user with given id
+    arguments:
+    user_id: it's a integer value which identifies the user to be deleted.
+    """
+
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter(User.user_id == user_id).first()
+        if not user:
+            return f"User #{user_id} not found."
+
+        db.delete(user)
+        db.commit()
+
+        cache_key = "users:all"
+        cached = redis_client.get(cache_key)
+
+        if cached:
+            users = json.loads(cached)
+            users = [u for u in users if u["e_id"] != user_id]
+            redis_client.set(cache_key, json.dumps(users))
+
+        return f"User #{user_id} deleted."
+    finally:
+        db.close()
+
+@tool
+def update_user(user_id: int, name: str = None, role_id: int = None) -> str:
+    """
+    Update an existing user's name or role.
+    Args:
+        user_id: The employee ID (e_id) of the user.
+        name: The new name (optional).
+        role_id: The new role ID (optional).
+    """
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter(User.e_id == user_id).first()
+        if not user:
+            return f"User #{user_id} not found."
+        
+        if name:
+            user.name = name
+        if role_id:
+            user.role_id = role_id
+            
+        db.commit()
+        db.refresh(user)
+
+        cache_key = "users:all"
+        cached = redis_client.get(cache_key)
+        
+        if cached:
+            users = json.loads(cached)
+            for u in users:
+                if u["id"] == user_id:
+                    u["name"] = user.name
+                    u["role"] = user.role.name # Assuming relationship is loaded
+                    break
+            redis_client.set(cache_key, json.dumps(users))
+
+        return f"User #{user_id} updated successfully."
+    finally:
+        db.close()
+
+@tool
+def list_roles() -> str:
+    """
+    Fetch and return a formatted list of all roles and their permissions.
+    """
+    cache_key = "roles:all"
+
+    # 1. Try Redis cached data first
+    cached = redis_client.get(cache_key)
+    if cached:
+        roles_data = json.loads(cached)
+    else:
+        db = SessionLocal()
+        try:
+            rows = db.query(Role).all()
+            roles_data = [
+                {
+                    "id": r.r_id,
+                    "name": r.name,
+                }
+                for r in rows
+            ]
+            redis_client.set(cache_key, json.dumps(roles_data))
+        finally:
+            db.close()
+
+    if not roles_data:
+        return "No roles found in the system."
+
+    return "System Roles and Permissions:\n" + "\n".join(
+        f"Role #{r['id']} ({r['name']}): Permissions = {', '.join(r['permissions'])}"
+        for r in roles_data
     )

@@ -21,30 +21,29 @@ async def initialize_redis():
     """Manually initializes Redis since on_start is unavailable."""
     global redis_ready
     if not redis_ready:
-        # For the sync RedisSaver, setup is NOT awaited
         checkpointer.setup() 
         redis_ready = True
-        print("redis Checkpointer initialized.")
+        # print("redis Checkpointer initialized.")
 
 @mcp.tool
 async def agent_execute(prompt: str, thread_id: Optional[str] = None) -> str:
     """Executes a task with persistent Redis memory."""
     await initialize_redis() # Ensure Redis is ready before execution
     
-    # try:
-    t_id = thread_id if thread_id else str(uuid.uuid4())
-    config = {"configurable": {"thread_id": t_id}}
+    try:
+        t_id = thread_id if thread_id else str(uuid.uuid4())
+        config = {"configurable": {"thread_id": t_id}}
         
-    response = agent.invoke(
+        response = agent.invoke(
             {"messages": [{"role": "user", "content": prompt}]}, 
             config=config
         )
         
-    messages = response.get("messages", [])
-    return str(messages[-1].content) if messages else "No response generated."
-    # except Exception as e:
-    print(e)
-    return f"Error is: {e}"
+        messages = response.get("messages", [])
+        return str(messages[-1].content) if messages else "No response generated."
+    except Exception as e:
+        print(e)
+        return f"Error: {e}"
 active_sessions={}
 
 

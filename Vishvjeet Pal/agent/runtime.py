@@ -3,14 +3,14 @@ from langchain.agents import create_agent
 # from langgraph.checkpoint.memory import InMemorySaver
 from core.utils.redis_checkpointer import checkpointer
 from langchain_openai import ChatOpenAI
-from agent.tools import list_tasks, create_task, delete_task, add_comment, list_comments, list_users
+from agent.tools import list_tasks, create_task, delete_task, add_comment, list_comments, list_users, create_user, delete_user, update_user, list_roles
 import os
 from core.utils.config import settings
 
 # memory = InMemorySaver()
 
 # 1. Define tools
-tools = [list_tasks, create_task, delete_task, add_comment, list_comments, list_users]
+tools = [list_tasks, create_task, delete_task, add_comment, list_comments, list_users, create_user, delete_user, update_user, list_roles]
 
 # 2. Initialize LLM
 llm = ChatOpenAI(
